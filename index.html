@@ -41,14 +41,14 @@
   <script src="js/app.js"></script>
   <script>
     function showKeyPrompt() {
-      const key = prompt('Enter your Anthropic API key (sk-ant-...):');
-      if (key && key.startsWith('sk-')) {
-        Tutor.setApiKey(key);
-        alert('✅ Key saved for this session!');
-      } else if (key) {
-        alert('Key should start with sk-ant-...');
-      }
-    }
+  const key = prompt('Enter your Gemini API key (AIza...):');
+  if (key && key.length > 10) {
+    Tutor.setApiKey(key);
+    alert('✅ Key saved for this session!');
+  } else if (key) {
+    alert('Key looks too short, please try again.');
+  }
+}
   </script>
 </body>
 </html>
