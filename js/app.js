@@ -285,26 +285,7 @@ const App = (() => {
   }
 
   function showApiKeyModal() {
-    const existing = document.getElementById('api-modal');
-    if (existing) { existing.style.display = 'flex'; return; }
-    const modal = document.createElement('div');
-    modal.id = 'api-modal';
-    modal.className = 'modal-overlay';
-    modal.innerHTML = `
-      <div class="modal-box">
-        <img src="avatar.png" class="modal-avatar" alt="Lyra">
-        <h2>Hi! I'm Lyra ✨</h2>
-        <p>To chat with me, you'll need a free Google Gemini API key.<br>Your key stays only in this browser tab.</p>
-        <a href="https://aistudio.google.com" target="_blank" class="btn-link">Get a free Gemini API key →</a>
-        <input type="password" id="api-key-input" class="api-key-input" placeholder="AIza...">
-        <div class="modal-actions">
-          <button class="btn-primary" onclick="App.saveApiKey()">Save & Start Learning</button>
-          <button class="btn-ghost" onclick="App.closeModal()">Maybe later</button>
-        </div>
-      </div>`;
-    document.body.appendChild(modal);
-    const inp = document.getElementById('api-key-input');
-    if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') App.saveApiKey(); });
+    showKeyPrompt();
   }
 
   function saveApiKey() {
