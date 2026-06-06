@@ -15,7 +15,6 @@ Your teaching style:
 - When showing code, always use proper markdown code blocks with language labels
 - If someone is stuck, break the problem into smaller steps
 - Praise good practices (descriptive variable names, comments, clean code)
-- Point out common pitfalls before they happen
 
 Personality traits:
 - Warm, patient, and never condescending
@@ -45,33 +44,35 @@ When reviewing code:
     const key = getApiKey();
     if (!key) throw new Error('NO_API_KEY');
 
-    conversationHistory.push({ role: 'user', content: userMessage });
-
-    let systemPrompt = SYSTEM_PROMPT;
-    if (currentContext) {
-      systemPrompt += `\n\nCurrent lesson context:\nTrack: ${currentContext.track}\nLesson: ${currentContext.lesson}`;
+    let fullMessage = userMessage;
+    if (currentContext && conversationHistory.length === 0) {
+      fullMessage = `[Context: Teaching ${currentContext.track}, lesson: ${currentContext.lesson}]\n\n${userMessage}`;
     }
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1024,
-        system: systemPrompt,
-        messages: conversationHistory,
-        stream: true,
-      }),
+    conversationHistory.push({ role: 'user', parts: [{ text: fullMessage }] });
+
+    const contents = conversationHistory.map((msg, i) => {
+      if (i === 0) {
+        return {
+          role: msg.role,
+          parts: [{ text: SYSTEM_PROMPT + '\n\n---\n\n' + msg.parts[0].text }]
+        };
+      }
+      return msg;
     });
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:streamGenerateContent?alt=sse&key=${key}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents }),
+      }
+    );
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      if (response.status === 401) throw new Error('INVALID_KEY');
+      if (response.status === 400 || response.status === 403) throw new Error('INVALID_KEY');
       throw new Error(err.error?.message || `API error ${response.status}`);
     }
 
@@ -85,20 +86,21 @@ When reviewing code:
       const chunk = decoder.decode(value);
       for (const line of chunk.split('\n')) {
         if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') continue;
+          const data = line.slice(6).trim();
+          if (!data || data === '[DONE]') continue;
           try {
             const parsed = JSON.parse(data);
-            if (parsed.type === 'content_block_delta' && parsed.delta?.type === 'text_delta') {
-              fullText += parsed.delta.text;
-              if (onChunk) onChunk(parsed.delta.text);
+            const text = parsed.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (text) {
+              fullText += text;
+              if (onChunk) onChunk(text);
             }
           } catch {}
         }
       }
     }
 
-    conversationHistory.push({ role: 'assistant', content: fullText });
+    conversationHistory.push({ role: 'model', parts: [{ text: fullText }] });
     return fullText;
   }
 
