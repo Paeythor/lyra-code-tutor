@@ -27,7 +27,7 @@
       </div>
     </main>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  < src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/javascript/javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/htmlmixed/htmlmixed.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/css/css.min.js"></script>
@@ -40,15 +40,64 @@
   <script src="js/tutor.js"></script>
   <script src="js/app.js"></script>
   <script>
-    function showKeyPrompt() {
-  const key = prompt('Enter your Gemini API key (AIza...):');
-  if (key && key.length > 10) {
-    Tutor.setApiKey(key);
-    alert('✅ Key saved for this session!');
-  } else if (key) {
-    alert('Key looks too short, please try again.');
+  function showKeyPrompt() {
+    const existing = document.getElementById('api-modal');
+    if (existing) { existing.style.display = 'flex'; return; }
+    const modal = document.createElement('div');
+    modal.id = 'api-modal';
+    modal.className = 'modal-overlay';
+    modal.innerHTML = `
+      <div class="modal-box">
+        <img src="avatar.png" class="modal-avatar" alt="Lyra">
+        <h2>Hi! I'm Lyra ✨</h2>
+        <p>Enter your free Google Gemini API key.<br>Your key stays only in this browser.</p>
+        <a href="https://aistudio.google.com" target="_blank" class="btn-link">Get a free Gemini API key →</a>
+        <input type="password" id="api-key-input" class="api-key-input" placeholder="AIza...">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <input type="checkbox" id="remember-key" style="width:16px;height:16px;cursor:pointer;">
+          <label for="remember-key" style="color:var(--muted);font-size:0.85rem;cursor:pointer;">Remember my key on this device</label>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-primary" onclick="saveKeyFromPrompt()">Save & Start Learning</button>
+          <button class="btn-ghost" onclick="App.closeModal()">Maybe later</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+
+    // Pre-fill if saved
+    const saved = localStorage.getItem('lyra_gemini_key');
+    if (saved) {
+      document.getElementById('api-key-input').value = saved;
+      document.getElementById('remember-key').checked = true;
+    }
+
+    const inp = document.getElementById('api-key-input');
+    if (inp) inp.addEventListener('keydown', e => { if (e.key === 'Enter') saveKeyFromPrompt(); });
   }
-}
-  </script>
+
+  function saveKeyFromPrompt() {
+    const inp = document.getElementById('api-key-input');
+    if (!inp) return;
+    const key = inp.value.trim();
+    if (!key || key.length < 10) {
+      inp.style.borderColor = '#ff5555';
+      return;
+    }
+    const remember = document.getElementById('remember-key')?.checked;
+    if (remember) {
+      localStorage.setItem('lyra_gemini_key', key);
+    } else {
+      localStorage.removeItem('lyra_gemini_key');
+    }
+    Tutor.setApiKey(key);
+    App.closeModal();
+  }
+
+  // Auto-load saved key on startup
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('lyra_gemini_key');
+    if (saved) Tutor.setApiKey(saved);
+  });
+</script>
 </body>
 </html>
