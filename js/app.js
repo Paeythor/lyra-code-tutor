@@ -45,7 +45,7 @@ const App = (() => {
       <div class="home-view">
         <div class="hero-section">
           <div class="avatar-glow">
-            <img src="assets/avatar.png" class="hero-avatar" alt="Lyra">
+            <img src="avatar.png" class="hero-avatar" alt="Lyra">
           </div>
           <div class="hero-text">
             <h1>Hey there, Coder! ✨</h1>
@@ -261,7 +261,7 @@ const App = (() => {
 
     const replyEl = document.createElement('div');
     replyEl.className = 'msg lyra-msg';
-    replyEl.innerHTML = `<img src="assets/avatar.png" class="msg-avatar" alt="Lyra"><div class="msg-bubble"><span class="thinking">Lyra is thinking...</span></div>`;
+    replyEl.innerHTML = `<img src="avatar.png" class="msg-avatar" alt="Lyra"><div class="msg-bubble"><span class="thinking">Lyra is thinking...</span></div>`;
     box.appendChild(replyEl);
     box.scrollTop = box.scrollHeight;
 
@@ -276,7 +276,7 @@ const App = (() => {
       });
     } catch (e) {
       if (e.message === 'NO_API_KEY' || e.message === 'INVALID_KEY') {
-        bubble.innerHTML = '<em>⚠️ Please set your Anthropic API key to chat with Lyra.</em>';
+        bubble.innerHTML = '<em>⚠️ Please set your Gemini API key to chat with Lyra.</em>';
         showApiKeyModal();
       } else {
         bubble.innerHTML = `<em>⚠️ Error: ${escHtml(e.message)}</em>`;
@@ -292,11 +292,11 @@ const App = (() => {
     modal.className = 'modal-overlay';
     modal.innerHTML = `
       <div class="modal-box">
-        <img src="assets/avatar.png" class="modal-avatar" alt="Lyra">
+        <img src="avatar.png" class="modal-avatar" alt="Lyra">
         <h2>Hi! I'm Lyra ✨</h2>
-        <p>To chat with me, you'll need a free Anthropic API key.<br>Your key stays only in this browser tab.</p>
-        <a href="https://console.anthropic.com" target="_blank" class="btn-link">Get a free API key →</a>
-        <input type="password" id="api-key-input" class="api-key-input" placeholder="sk-ant-...">
+        <p>To chat with me, you'll need a free Google Gemini API key.<br>Your key stays only in this browser tab.</p>
+        <a href="https://aistudio.google.com" target="_blank" class="btn-link">Get a free Gemini API key →</a>
+        <input type="password" id="api-key-input" class="api-key-input" placeholder="AIza...">
         <div class="modal-actions">
           <button class="btn-primary" onclick="App.saveApiKey()">Save & Start Learning</button>
           <button class="btn-ghost" onclick="App.closeModal()">Maybe later</button>
@@ -311,7 +311,7 @@ const App = (() => {
     const inp = document.getElementById('api-key-input');
     if (!inp) return;
     const key = inp.value.trim();
-    if (!key.startsWith('sk-')) { inp.style.borderColor = '#ff5555'; return; }
+    if (!key) { inp.style.borderColor = '#ff5555'; return; }
     Tutor.setApiKey(key);
     closeModal();
   }
